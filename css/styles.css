@@ -4,3 +4,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+html {
+    scroll-behavior: smooth;
+}
+
+.error-message {
+    color: red;
+}
+
+.jumbotron {
+    background: url(../images/bg1.jpg);
+}

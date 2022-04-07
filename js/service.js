@@ -1,59 +1,62 @@
 const URL = "https://restcountries.com/v3.1";
-const NATION_PLACEHOLDER_ID = "nation-cards";
-const PAGINATOR_PLACEHOLDER_ID = "paginator";
+const NATION_DROPDOWN_ID = 'nation-dropdown'
 
-function getAllCountries() {
-    // Get param form url string
-    const params = new Proxy(new URLSearchParams(window.location.search), {
-        get: (searchParams, prop) => searchParams.get(prop),
-    });
+const NATION_NAME_ID = "nation-name";
+const NATION_POP_ID = "nation-pop";
+const NATION_LANG_ID = "nation-lang";
+const NATION_SIZE_ID = "nation-size";
+const NATION_REGION_ID = "nation-region";
+const NATION_CURRENCY_ID = "nation-currency";
+const NATION_CAP_ID = "nation-cap";
+const NATION_FLAG_ID = "nation-flag";
 
-    // Obtain param page and size
-    const page = params.page;
-    const size = params.size;
+function loadCountryByName(name) {
 
-    console.log(page);
-    console.log(size);
-
-    let nationPlaceholder = document.getElementById(NATION_PLACEHOLDER_ID);
-    let paginator = document.getElementById(PAGINATOR_PLACEHOLDER_ID);
-    paginator.innerHTML = "";
-    for (let i = 0; i < 10; i++) {
-        paginator.innerHTML +=
-            `<li class="page-item">
-                <a class="page-link" href="?page=${i}&size=${!size ? 12 : size}">${i + 1}</a>
-            </li>`
+    console.log("Nation", name)
+    if (!name || name === "") {
+        name = "vietnam";
     }
 
-    fetch(`${URL}/all`).then(res => res.json()).then(data => {
-        nationPlaceholder.innerHTML = "";
-
-        // The start index and end index are calculated based on the page and size
-        const start = (!page ? 0 : page) * (!size ? 12 : size)
-        const end = start + parseInt(!size ? 12 : size, 10)
-
-        console.log(start);
-        console.log(end);
-
-        const paginatedData = data.slice(start, end)
-        paginatedData.forEach(item => {
-            nationPlaceholder.innerHTML +=
-                `<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 mt-2 mb-2">
-                    <div class="card card border-dark">
-                        <img class="card-img-top" style="height: 160px; object-fit: cover; width: 100%"
-                            src="${item.flags.svg}" alt="Card image cap">
-                        <div class="card-body">
-                            <h5 class="card-title long-and-truncated">${item.name.common}</h5>
-                            <p class="card-text long-and-truncated">${item.name.official}</p>
-                            <a  class="btn btn-outline-dark btn-block" 
-                                href="./detail.html?name=${item.name.common}">
-                                More detail
-                            </a>
-                        </div>
-                    </div>
-                </div>`;
-        })
+    let nationName = document.getElementById(NATION_NAME_ID);
+    let nationPop = document.getElementById(NATION_POP_ID);
+    let nationLang = document.getElementById(NATION_LANG_ID);
+    let nationSize = document.getElementById(NATION_SIZE_ID);
+    let nationRegion = document.getElementById(NATION_REGION_ID);
+    let nationCurrency = document.getElementById(NATION_CURRENCY_ID);
+    let nationCap = document.getElementById(NATION_CAP_ID);
+    let nationFlag = document.getElementById(NATION_FLAG_ID);
+    fetch(`${URL}/name/${name}`).then(res => res.json()).then(data => {
+        data = data[0]
+        nationName.innerText = data.name.common + " - " + data.name.official;
+        nationPop.innerText = data.population;
+        nationCurrency.innerText = data.currencies[Object.keys(data.currencies)[0]].name
+        nationLang.innerText = data.languages[Object.keys(data.languages)[0]];
+        nationSize.innerText = data.area;
+        nationRegion.innerText = data.continents[Object.keys(data.continents)[0]];
+        nationCap.innerText = data.capital[Object.keys(data.capital)[0]]
+        nationFlag.innerHTML = `
+            <img src="${data.flags.svg}" style="width: 300px; margin:0; padding: 0; object-fit:cover; height: 25vh" alt="nation-image" />
+        `
     })
 }
 
-getAllCountries();
+function getNationNameForDropdown(size = 10) {
+    let dropdown = document.getElementById(NATION_DROPDOWN_ID);
+    fetch(`${URL}/all`).then(res => res.json()).then(data => {
+        data.slice(0, size).forEach(item  => {
+            dropdown.innerHTML += `<option value="${item.name.common}"> ${item.region} ${item.subregion} - ${item.name.common}</option>`
+        });
+        
+    })
+}
+
+function searchName() {
+    const input = document.getElementById("search-name");
+    loadCountryByName(input.value)
+}
+
+const search = document.getElementById("search-name");
+getNationNameForDropdown(19);
+if (!search || !search.value || search.value === "") {
+    loadCountryByName("vietnam")
+}
